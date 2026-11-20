@@ -1,10 +1,14 @@
 {
-  "name": "grid",
+  "name": "react-virtual-datagrid",
   "private": true,
+  "version": "0.1.0",
   "type": "module",
+  "description": "Virtualized data grid for 10 000+ rows: rectangular selection, in-cell editing, resize, reorder, pinned columns",
   "scripts": {
+    "dev": "vite",
     "build": "tsc -b && vite build",
-    "dev": "vite"
+    "build:site": "tsc -b && GRID_OUT_DIR=../public vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.6",
@@ -14,6 +18,7 @@
     "react-dom": "^19.1.1"
   },
   "devDependencies": {
+    "@types/node": "^26.6.6",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.4",

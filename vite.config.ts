@@ -1,8 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// собираем сразу в public/ проекта: платформа отдаёт его как статику
+// По умолчанию сборка идёт в dist/ — так репозиторий датагрида собирается сам по себе.
+// На платформе (baseone) статика отдаётся из public/, поэтому там сборка запускается
+// с GRID_OUT_DIR=../public (см. скрипт build:site в package.json).
 export default defineConfig({
   plugins: [react()],
-  build: { outDir: 'dist', emptyOutDir: true },
+  build: { outDir: process.env.GRID_OUT_DIR || 'dist', emptyOutDir: true },
 })
