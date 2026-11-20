@@ -1,7 +1,8 @@
 export function Spinner() {
-    return (
-        <div style={{ padding: 24, textAlign: 'center', opacity: 0.8 }}>
-            <div className="lds-dual-ring"></div>
-        </div>
-    )
+  return (
+    <div className="spinnerWrap">
+      <div className="lds-dual-ring" />
+      <span>Загружаем 10 000 записей…</span>
+    </div>
+  )
 }

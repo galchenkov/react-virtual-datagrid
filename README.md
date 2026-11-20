@@ -1,103 +1,113 @@
 # Virtualized DataGrid
 
-A React and TypeScript data grid designed for datasets of 10,000+ rows.
+Виртуализированный датагрид для таблиц от 10 000 строк: React 19 + TypeScript + TanStack Table + TanStack Virtual.
 
-The project focuses on frontend performance and predictable UI behavior through row virtualization, debounced filtering, sortable columns, computed values, CSV export, and explicit loading, empty, error, and recovery states.
+В DOM живёт 20–30 строк независимо от размера данных. Таблица не знает, откуда берутся строки и куда уходит
+сохранение: данные приходят пропсом, запись уходит через `onSaveCell`.
 
-## Features
+Основа — [RamBeer6/react-virtual-datagrid](https://github.com/RamBeer6/react-virtual-datagrid).
 
-- virtualized row rendering with a constant-size DOM footprint
-- debounced search
-- sortable columns
-- computed margin percentage
-- CSV export for the filtered dataset
-- loading, empty, error, and recovery flows
-- clean console output with no runtime warnings
+## Возможности
 
-## Technology Stack
+- виртуализация строк: постоянный размер DOM, прокрутка на 10 000 / 50 000 / 100 000 строк
+- выделение прямоугольником: клик, Shift+клик, протаскивание мышью, стрелки, Shift+стрелки
+- копирование выделенного в буфер обмена как TSV — вставляется в Excel и Google Таблицы
+- правка одной ячейки: двойной клик, Enter или просто печать символа; Enter сохраняет, Esc отменяет
+- типы редакторов: строка, число, дата, дата-время, выбор из списка, справочник с подгрузкой значений
+- валидация рядом с описанием колонки: число, целое, минимум/максимум, формат даты, значение из списка
+- вычисляемые колонки только для чтения (сумма пересчитывается из количества, цены и скидки)
+- номер строки: серая полоса слева, клик выделяет строку целиком, опция вкл/выкл
+- закрепляемые колонки: остаются слева при горизонтальной прокрутке, тень появляется только когда есть что прокручивать
+- изменение ширины колонки (потянуть за край заголовка, двойной клик — исходная)
+- изменение порядка колонок перетаскиванием заголовка
+- сортировка по клику на заголовок, индикатор только у активной колонки
+- поиск с задержкой, экспорт найденного в CSV
+- состояния загрузки, ошибки, пустого результата
 
-- React 19
-- TypeScript
-- Vite
-- TanStack Table
-- TanStack Virtual
-- TanStack Query
-- custom utility hooks
+## Быстрый старт
 
-## Quick Start
-
-### Requirements
-
-- Node.js
-- npm
-
-Install dependencies:
-
-```bash
+```sh
 npm install
+npm run dev      # http://localhost:5173
+npm run build    # tsc -b && vite build → dist/
 ```
 
-Start the development server:
+## Структура
 
-```bash
-npm run dev
+```
+src/
+  components/
+    DataTable.tsx     таблица: показ, выделение, правка, ширина/порядок/закрепление колонок
+    CellEditor.tsx    редактор ячейки по типу колонки
+    Toolbar.tsx       поиск, экспорт, сброс раскладки
+    Spinner.tsx       состояние загрузки
+  hooks/
+    useDebounce.ts    задержка поиска
+  lib/
+    model.ts          описание колонок, валидация, пересчёт суммы, нормализация для поиска
+    useGridData.ts    источник данных и сохранение: react-query + оптимистичное обновление
+    api.ts            «сервер» для демо: задержка чтения и записи, имитация ошибки
+    seed.ts           генератор записей
+    dictionaries.ts   справочники (города приходят асинхронно, как настоящий справочник)
+    csv.ts            выгрузка CSV
+    clipboard.ts      копирование в буфер обмена
+  types.ts            тип строки
+  App.tsx             демо: 10 000 строк, переключение объёма, имитация сбоя сохранения
+  index.css           стили таблицы
 ```
 
-Create a production build:
+## Разделение ответственности
 
-```bash
-npm run build
-```
+- **`DataTable`** — только показ и взаимодействие. Пропсы: `rows`, `columns`, `saving`, `onSaveCell`,
+  `showRowNumbers`. Ничего не знает про сеть и про то, откуда данные.
+- **`useGridData`** — загрузка и сохранение. Оптимистичное обновление: значение меняется сразу, при ошибке
+  откатывается, ответ сервера — источник истины.
+- **`api.ts`** — в демо это модуль с задержками (400 мс чтение, 500 мс запись) и имитацией 500-й ошибки.
+  Чтобы подключить настоящий backend, достаточно заменить `fetchSales` и `saveCell` на запросы к `/api/...`:
+  компоненты таблицы менять не нужно.
 
-Run lint checks:
+## Описание колонок
 
-```bash
-npm run lint
-```
-
-## Performance Approach
-
-### Row Virtualization
-
-Rendering thousands of table rows at once creates unnecessary DOM nodes and can block the browser during layout and paint work.
-
-The grid uses TanStack Virtual to render only the rows currently visible in the viewport while simulating the full scroll height. This keeps the DOM size stable even when the underlying dataset grows.
-
-### Debounced Filtering
-
-Search input is wrapped in a custom `useDebounce()` hook with a 300 ms delay. This reduces repeated filtering work and avoids recalculating the full dataset on every keystroke.
-
-Searchable fields are normalized in advance, including lower-cased customer and category values, to avoid repeating string transformations during filtering.
-
-### Computed Columns
-
-Margin percentage is derived at render time from the current price and cost values:
+Колонки — это данные, а не код таблицы (`src/lib/model.ts`):
 
 ```ts
-const pct = price > 0 ? ((price - cost) / price) * 100 : 0
+export type ColumnConfig = {
+  key: keyof SaleRow & string
+  header: string
+  width: number
+  align?: 'right'
+  editor: 'text' | 'number' | 'date' | 'datetime' | 'status' | 'lookup' | 'readonly'
+  options?: string[]                    // выбор из списка
+  lookup?: () => Promise<string[]>      // справочник: значения грузятся при открытии редактора
+  min?: number; max?: number; step?: number; integer?: boolean
+  badge?: boolean                       // показывать значком
+  format?: (value: any) => string
+}
 ```
 
-The calculation also handles a zero-price edge case explicitly.
+`editor: 'readonly'` — колонка считается, а не правится (сумма).
 
-## User Experience States
+## Управление
 
-The grid includes explicit handling for:
+| Действие | Что делает |
+| --- | --- |
+| клик | выбрать ячейку |
+| Shift+клик, протаскивание мышью | выделить прямоугольник |
+| стрелки / Shift+стрелки | двигать / расширять выделение |
+| Ctrl/Cmd+C | выделенный прямоугольник в буфер (TSV) |
+| двойной клик, Enter, печать символа | открыть редактор ячейки |
+| Enter / Tab | сохранить, Esc — отменить |
+| клик по номеру строки | выделить строку целиком |
+| клик по шапке номера строки | выделить всю таблицу |
+| потянуть за край заголовка | изменить ширину (двойной клик — исходная) |
+| перетащить заголовок | поменять порядок колонок |
+| кнопка-закрепка в заголовке | закрепить/открепить колонку слева |
 
-- initial loading
-- empty datasets
-- filtered results with no matches
-- recoverable errors
-- successful reloads after an error
+Пока фокус в таблице, выделение синее; если фокус ушёл в поиск или на кнопку — серое.
+Неверное значение не уходит на сервер: ячейка подсвечивается красным, причина видна внизу, Esc или клик мимо
+отменяют ввод.
 
-These states keep the interface predictable instead of relying on a blank table or console-only failure reporting.
+## Проверка
 
-## Engineering Focus
-
-This project demonstrates:
-
-- performance-aware component design
-- typed table configuration
-- controlled filtering and sorting
-- separation of reusable UI behavior into hooks
-- handling of non-happy-path UI states
-- production build and lint validation
+Демо проверено в браузере: виртуализация на 100 000 строк, сортировка, фильтр, ресайз и порядок колонок,
+закрепление с горизонтальной прокруткой, правка всех типов, откат при ошибке сохранения.

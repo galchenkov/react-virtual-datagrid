@@ -1,5 +1,7 @@
-import type { SaleRow } from '../types'
+import type { SaleRow, Status } from '../types'
+import { CATEGORIES, CITIES, STATUSES } from './dictionaries'
 
+// Детерминированный генератор: одни и те же строки при каждой загрузке.
 function mulberry32(seed: number) {
   return function () {
     let t = (seed += 0x6d2b79f5)
@@ -9,9 +11,10 @@ function mulberry32(seed: number) {
   }
 }
 
-const customers = ['Alice', 'Bob', 'Charlie', 'Dana', 'Eve', 'Frank', 'Grace', 'Heidi', 'Ivan', 'Judy', 'Mallory', 'Niaj', 'Olivia', 'Peggy', 'Sybil', 'Trent', 'Victor', 'Walter']
-const categories: Array<SaleRow['category']> = ['Hardware', 'Software', 'Services']
-const statuses: Array<SaleRow['status']> = ['new', 'processing', 'shipped', 'canceled']
+const firstNames = ['Анна', 'Иван', 'Мария', 'Пётр', 'Ольга', 'Сергей', 'Елена', 'Дмитрий', 'Наталья', 'Алексей', 'Ирина', 'Павел', 'Татьяна', 'Максим', 'Юлия', 'Артём']
+const lastNames = ['Петрова', 'Смирнов', 'Кузнецова', 'Соколов', 'Попова', 'Лебедев', 'Козлова', 'Новиков', 'Морозова', 'Волков', 'Соловьёва', 'Орлов', 'Зайцева', 'Фёдоров', 'Павлова', 'Никитин']
+
+const pick = <T,>(rnd: () => number, list: T[]): T => list[Math.floor(rnd() * list.length)]
 
 export function generateSales(count = 10_000, seed = 42): SaleRow[] {
   const rnd = mulberry32(seed)
@@ -20,38 +23,36 @@ export function generateSales(count = 10_000, seed = 42): SaleRow[] {
   const end = new Date('2025-10-01').getTime()
 
   for (let i = 1; i <= count; i++) {
-    const customer = customers[Math.floor(rnd() * customers.length)]
-    const category = categories[Math.floor(rnd() * categories.length)]
+    const customer = `${pick(rnd, firstNames)} ${pick(rnd, lastNames)}`
+    const city = pick(rnd, CITIES)
+    const category = pick(rnd, CATEGORIES)
+    const status: Status = pick(rnd, STATUSES)
     const quantity = Math.max(1, Math.floor(rnd() * 10))
-
-    const base = 20 + rnd() * 980
-    const costFactor = 0.3 + rnd() * 0.5
-
-    const price = Math.round(base * 100) / 100
-    const cost = Math.round(base * costFactor * 100) / 100
-
-    const marginPct = price > 0 ? ((price - cost) / price) * 100 : 0
+    const price = Math.round((150 + rnd() * 19_850) * 100) / 100
+    const discount = Math.floor(rnd() * 31) // 0…30 %
 
     const d = new Date(start + rnd() * (end - start))
     const dateISO = d.toISOString().slice(0, 10)
+    const createdAt = `${dateISO}T${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`
 
-    const date = d.toISOString()
-
-    const status = statuses[Math.floor(rnd() * statuses.length)]
+    const total = Math.round(quantity * price * (1 - discount / 100) * 100) / 100
 
     rows.push({
       id: i,
       customer,
-      customerLC: customer.toLowerCase(),
+      city,
       category,
-      categoryLC: category.toLowerCase(),
-      price,
-      cost,
       quantity,
-      date,
+      price,
+      discount,
+      total,
+      status,
       dateISO,
-      marginPct,
-      status
+      createdAt,
+      customerLC: customer.toLowerCase(),
+      cityLC: city.toLowerCase(),
+      categoryLC: category.toLowerCase(),
+      statusLC: status.toLowerCase(),
     })
   }
 

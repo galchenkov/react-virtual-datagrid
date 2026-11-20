@@ -1,128 +1,706 @@
 :root {
-    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-    line-height: 1.4;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.45;
+  color: #111827;
+  background: #f5f6f8;
+  -webkit-font-smoothing: antialiased;
 }
 
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 html,
 body,
 #root {
-    height: 100%;
-    margin: 0;
+  min-height: 100%;
+  margin: 0;
 }
 
-.app {
-    padding: 16px;
+.page {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 28px 20px 44px;
+}
+
+.head {
+  display: flex;
+  gap: 24px;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+h1 {
+  font-size: 24px;
+  line-height: 1.2;
+  margin: 0 0 6px;
+  letter-spacing: -0.01em;
+}
+
+.sub {
+  margin: 0;
+  max-width: 620px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #4b5563;
+}
+
+select {
+  padding: 7px 9px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  color: #111827;
+}
+
+.fetching {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.btn {
+  padding: 7px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #111827;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #c4c9d1;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn.primary {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+
+.btn.primary:hover:not(:disabled) {
+  background: #1d4ed8;
 }
 
 .tableShell {
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    overflow: hidden;
+  background: #fff;
+  border: 1px solid #e3e6ea;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+  overflow: hidden;
 }
 
-.tableHeader {
-    position: sticky;
-    top: 0;
-    background: #f9fafb;
-    border-bottom: 1px solid #e5e7eb;
+.toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid #eef0f3;
+  flex-wrap: wrap;
 }
 
-.tableContainer {
-    height: 70vh;
-    overflow: auto;
-    position: relative;
-    scrollbar-gutter: stable;
+.toolbarSpacer {
+  flex: 1;
 }
 
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
+.search {
+  padding: 8px 11px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  width: 340px;
+  max-width: 100%;
+  font-size: 14px;
+  outline: none;
 }
 
-.tableEmpty {
-    text-align: center;
-    padding: 24px;
-    opacity: 0.65;
-    font-style: italic;
+.search:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
-.th,
-.td {
-    padding: 6px 8px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.scroll {
+  height: 66vh;
+  min-height: 320px;
+  overflow: auto;
+  position: relative;
+  scrollbar-gutter: stable;
 }
 
-.tr.even {
-    background: #fcfcfd;
+.grid {
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  font-size: 13px;
 }
 
-.tr.odd {
-    background: #ffffff;
+.grid th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #f9fafb;
+  text-align: left;
+  font-weight: 600;
+  /* мельче данных и без капса: строка заголовка не выглядит тяжелее строк */
+  font-size: 12px;
+  color: #4b5563;
+  height: 38px;
+  /* справа место под кнопку закрепления, чтобы она не наезжала на название */
+  padding: 0 26px 0 10px;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-tr.even td {
-    background: #fafafa;
+.grid th.sortable {
+  cursor: pointer;
+  user-select: none;
 }
 
-tr:hover td {
-    background: #eaeaea;
+/* заголовок выровнен так же, как значения в колонке */
+.grid th.num {
+  text-align: right;
 }
 
-.caption {
-    font-size: 14px;
-    color: #64748b;
-    margin-bottom: 8px;
+.grid th.sortable:hover {
+  background: #f3f4f6;
 }
 
-button {
-    padding: 4px 10px;
-    border: 1px solid #ccc;
-    background: #f9f9f9;
-    cursor: pointer;
-    border-radius: 4px;
-    font-size: 13px;
+.grid th.dragging {
+  opacity: 0.4;
 }
 
-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+.grid th.dropTarget {
+  box-shadow: inset 3px 0 0 #2563eb;
 }
 
-button:hover:not(:disabled) {
-    background: #eee;
+.thLabel {
+  /* не мешает ручке ресайза и значку сортировки */
+  pointer-events: none;
+}
+
+/* ручка изменения ширины: внутри ячейки, чтобы её не срезало overflow */
+.colResizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 9px;
+  height: 100%;
+  cursor: col-resize;
+  touch-action: none;
+  user-select: none;
+  z-index: 1;
+}
+
+/* разделитель виден только у заголовка под курсором (или во время ресайза):
+   во всю высоту заголовка, вплотную к его правому краю */
+.colResizer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 1px;
+  background: #d1d5db;
+  opacity: 0;
+  transition: opacity 0.12s, background 0.12s, width 0.12s;
+}
+
+.grid th:hover .colResizer::after,
+.grid th.resizing .colResizer::after {
+  opacity: 1;
+}
+
+.colResizer:hover::after,
+.grid th.resizing .colResizer::after {
+  width: 3px;
+  background: #2563eb;
+}
+
+.sortIcon {
+  margin-left: 5px;
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.grid td {
+  height: 38px;
+  padding: 0 10px;
+  border-bottom: 1px solid #f1f2f4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #1f2937;
+}
+
+.grid tbody tr:hover td {
+  background: #f5f8ff;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 18px;
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.badge.new {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.badge.work {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.badge.sent {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.badge.canceled {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.empty {
+  padding: 28px 12px !important;
+  text-align: center;
+  color: #6b7280;
+}
+
+.statusbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 9px 12px;
+  border-top: 1px solid #eef0f3;
+  background: #fcfcfd;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.statusbar b {
+  color: #111827;
+  font-weight: 600;
+}
+
+.hint {
+  margin: 14px 2px 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.spinnerWrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 32px;
+  justify-content: center;
+  color: #6b7280;
+  font-size: 14px;
+  background: #fff;
+  border: 1px solid #e3e6ea;
+  border-radius: 12px;
+}
+
+.errorBox {
+  background: #fff;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  color: #374151;
+}
+
+.errorTitle {
+  color: #b91c1c;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.errorBox p {
+  margin: 0 0 14px;
+  font-size: 14px;
+  color: #6b7280;
 }
 
 .lds-dual-ring {
-    display: inline-block;
-    width: 32px;
-    height: 32px;
+  display: inline-block;
+  width: 28px;
+  height: 28px;
 }
 
 .lds-dual-ring:after {
-    content: " ";
-    display: block;
-    width: 24px;
-    height: 24px;
-    margin: 4px;
-    border-radius: 50%;
-    border: 3px solid #999;
-    border-color: #999 transparent #999 transparent;
-    animation: lds-dual-ring 1.2s linear infinite;
+  content: ' ';
+  display: block;
+  width: 20px;
+  height: 20px;
+  margin: 4px;
+  border-radius: 50%;
+  border: 3px solid #9ca3af;
+  border-color: #9ca3af transparent #9ca3af transparent;
+  animation: lds-dual-ring 1.2s linear infinite;
 }
 
 @keyframes lds-dual-ring {
-    0% {
-        transform: rotate(0deg);
-    }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 
-    100% {
-        transform: rotate(360deg);
-    }
+@media (max-width: 640px) {
+  .page {
+    padding: 18px 12px 32px;
+  }
+  .scroll {
+    height: 60vh;
+  }
+  .search {
+    width: 100%;
+  }
+}
+
+/* --- выделение, правка, состояния сохранения --- */
+
+.scroll:focus {
+  outline: none;
+}
+
+/* у самой таблицы рамки фокуса нет: состояние фокуса видно по цвету выделения */
+
+.grid tbody td {
+  user-select: none;
+  cursor: cell;
+  position: relative;
+}
+
+.grid tbody td.sel {
+  background: #eaf1ff;
+}
+
+.grid tbody tr:hover td.sel {
+  background: #e0eaff;
+}
+
+.grid tbody td.selFocus {
+  box-shadow: inset 0 0 0 2px #2563eb;
+  background: #eaf1ff;
+}
+
+/* фокус ушёл из таблицы (в поиск, на кнопку, в другое окно) — выделение серое */
+.scroll.unfocused .grid tbody td.sel {
+  background: #eef0f2;
+}
+
+.scroll.unfocused .grid tbody tr:hover td.sel {
+  background: #e8eaee;
+}
+
+.scroll.unfocused .grid tbody td.selFocus {
+  box-shadow: inset 0 0 0 2px #9aa3af;
+  background: #eef0f2;
+}
+
+.grid tbody td.saving {
+  background: #fff7e0;
+}
+
+.grid tbody td.saving::after {
+  content: "";
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #d97706;
+  animation: pulse 0.9s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
+}
+
+/* рамка выделения остаётся у ячейки, сам редактор — без рамки и без отступов:
+   ничего не съезжает и не появляется второй рамки */
+.grid tbody td.editing,
+.grid tbody td.editing.selFocus {
+  padding: 0 10px;
+  box-shadow: inset 0 0 0 2px #2563eb;
+  background: #fff;
+}
+
+/* неверное значение — та же рамка, только красная */
+.grid tbody td.editing.invalid,
+.grid tbody td.editing.invalid.selFocus {
+  box-shadow: inset 0 0 0 2px #dc2626;
+}
+
+.cellEditor {
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  font: inherit;
+  font-size: 13px;
+  background: transparent;
+  color: #111827;
+  outline: none;
+  box-shadow: none;
+}
+
+.cellEditor.invalid {
+  color: #b91c1c;
+}
+
+.cellEditor::selection {
+  background: #bfdbfe;
+}
+
+select.cellEditor {
+  padding: 0 2px;
+  cursor: pointer;
+}
+
+.statusbar .btn.small {
+  padding: 3px 9px;
+  font-size: 12px;
+}
+
+.notice {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 12px;
+}
+
+.notice.err {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.legend {
+  display: grid;
+  gap: 6px;
+  margin: 14px 2px 0;
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.legend b {
+  color: #374151;
+}
+
+.btn.danger {
+  border-color: #fca5a5;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+/* ---------------------------------------------------- номер строки и закрепление */
+
+/* номер строки: серая полоса слева, содержимое уезжает под неё.
+   Справа — сплошная линия во всю высоту, как граница колонки */
+.grid th.rowNum,
+.grid tbody td.rowNum {
+  position: sticky;
+  left: 0;
+  text-align: right;
+  color: #9ca3af;
+  font-variant-numeric: tabular-nums;
+  background: #f4f5f7;
+  border-right: 1px solid #e3e6ea;
+  cursor: pointer;
+}
+
+.grid th.rowNum {
+  z-index: 4;
+}
+
+.grid tbody td.rowNum {
+  z-index: 2;
+  font-size: 12px;
+}
+
+.grid tbody tr:hover td.rowNum {
+  background: #eceef2;
+}
+
+.grid tbody td.rowNum.sel {
+  background: #e3eaf8;
+  color: #4b5563;
+}
+
+.scroll.unfocused .grid tbody td.rowNum.sel {
+  background: #e8eaee;
+}
+
+/* закреплённая колонка: sticky-ячейка, фон непрозрачный и чуть темнее обычных,
+   шапка — как у колонки с номером строки. Тени нет: вместо неё сплошная линия
+   по правому краю группы, иначе тень дробится по строкам */
+.grid th.frozen {
+  position: sticky;
+  z-index: 3;
+  background: #f4f5f7;
+}
+
+.grid tbody td.frozen {
+  position: sticky;
+  z-index: 1;
+  background: #fafbfc;
+}
+
+.grid tbody tr:hover td.frozen {
+  background: #f2f6fd;
+}
+
+.grid tbody td.frozen.sel {
+  background: #eaf1ff;
+}
+
+.grid tbody td.frozen.selFocus {
+  background: #eaf1ff;
+}
+
+.grid tbody td.frozen.saving {
+  background: #fff7e0;
+}
+
+.scroll.unfocused .grid tbody td.frozen.sel {
+  background: #eef0f2;
+}
+
+/* граница закреплённой группы: одна сплошная линия на всю высоту */
+.grid th.frozenEdge,
+.grid tbody td.frozenEdge {
+  border-right: 1px solid #dfe3e8;
+}
+
+/* кнопка закрепления в заголовке: видна при наведении, у закреплённой — всегда */
+.pinBtn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: #f9fafb;
+  font-size: 10px;
+  line-height: 1;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.12s, background 0.12s;
+}
+
+.grid th:hover .pinBtn,
+.pinBtn.pinned {
+  opacity: 0.6;
+}
+
+.pinBtn:hover {
+  opacity: 1;
+  background: #e5e7eb;
+}
+
+.pinBtn.pinned {
+  color: #2563eb;
+  opacity: 0.85;
+}
+
+.pinBtn svg {
+  display: block;
+  margin: 0 auto;
+}
+
+.field.check {
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.field.check input {
+  margin: 0;
+  cursor: pointer;
+}
+
+/* обёртка: поверх неё лежит тень у границы неподвижной части */
+.scrollWrap {
+  position: relative;
+}
+
+/* тень — один элемент, а не тень от каждой ячейки: не дробится по строкам.
+   Появляется только когда горизонтальная прокрутка есть и содержимое уехало */
+.frozenShadow {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  pointer-events: none;
+  z-index: 5;
+  background: linear-gradient(to right, rgba(15, 23, 42, 0.06), rgba(15, 23, 42, 0));
+}
+
+/* подпись только для скринридера */
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* шапка номера строки: не сортируется, но кликабельна (выделить всё) */
+.grid th.rowNum {
+  cursor: pointer;
 }
